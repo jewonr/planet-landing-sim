@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PLANETFALL — 행성 착륙 시뮬레이터</title>
+<meta name="description" content="행성의 중력과 공기저항, 우주선의 질량·속도·각도·형태를 바꿔 가며 착륙에 도전하는 2D 시뮬레이션">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Bungee&family=Noto+Sans+KR:wght@400;500;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="brand">
+    <p class="kicker">LANDING MIX · VOL. 1</p>
+    <h1><span class="logo">PLANETFALL</span><span class="logo-ko">행성 착륙 시뮬레이터</span></h1>
+  </div>
+  <svg class="cassette" id="cassette" viewBox="0 0 200 124" aria-hidden="true">
+    <rect x="3" y="3" width="194" height="118" rx="10" fill="#241038" stroke="#ffc93c" stroke-width="3"/>
+    <rect x="16" y="14" width="168" height="74" rx="6" fill="#ffe9c7"/>
+    <rect x="16" y="14" width="168" height="9" fill="#ff7a1a"/>
+    <rect x="16" y="23" width="168" height="5" fill="#ff2a7f"/>
+    <rect x="16" y="28" width="168" height="4" fill="#19e6c8"/>
+    <text x="100" y="47" text-anchor="middle" font-family="Bungee, sans-serif" font-size="11" fill="#241038">AWESOME LANDING</text>
+    <rect x="44" y="54" width="112" height="28" rx="14" fill="#241038"/>
+    <g class="reel" style="transform-origin:66px 68px"><circle cx="66" cy="68" r="10" fill="#ffe9c7"/><path d="M66 58v20M56 68h20M59 61l14 14M73 61L59 75" stroke="#241038" stroke-width="2.4"/></g>
+    <g class="reel" style="transform-origin:134px 68px"><circle cx="134" cy="68" r="10" fill="#ffe9c7"/><path d="M134 58v20M124 68h20M127 61l14 14M141 61l-14 14" stroke="#241038" stroke-width="2.4"/></g>
+    <path d="M40 121l8-24h104l8 24z" fill="#3a1466" stroke="#ffc93c" stroke-width="2"/>
+    <circle cx="70" cy="110" r="3" fill="#ffc93c"/><circle cx="130" cy="110" r="3" fill="#ffc93c"/>
+  </svg>
+</header>
+<div class="stripes" aria-hidden="true"></div>
+
+<main class="layout">
+  <aside class="controls" id="controls">
+
+    <section class="panel panel-planet">
+      <header class="panel-head"><span class="tag">SIDE A</span><h2>행성</h2></header>
+      <div class="planet-row">
+        <div class="orb" id="orb"></div>
+        <div class="presets" role="group" aria-label="행성 선택">
+          <button type="button" class="chip" data-planet="earth">지구</button>
+          <button type="button" class="chip" data-planet="moon">달</button>
+          <button type="button" class="chip" data-planet="alien">외계행성</button>
+          <button type="button" class="chip ghost" id="randomPlanet">무작위 행성</button>
+        </div>
+      </div>
+      <label class="slider"><span class="row"><span class="name">중력가속도</span><output id="o-g"></output></span>
+        <input type="range" id="s-g" min="1" max="30" step="0.1"><small id="h-g"></small></label>
+      <label class="slider"><span class="row"><span class="name">공기저항 <em>(대기 밀도)</em></span><output id="o-air"></output></span>
+        <input type="range" id="s-air" min="0" max="5" step="0.05"><small id="h-air"></small></label>
+      <p class="facts" id="planetFacts"></p>
+    </section>
+
+    <section class="panel panel-ship">
+      <header class="panel-head"><span class="tag">SIDE B</span><h2>우주선</h2></header>
+      <div class="shapes" id="shapes" role="group" aria-label="우주선 형태"></div>
+      <div class="shape-info">
+        <p id="shapeDesc"></p>
+        <dl class="stats" id="shapeStats"></dl>
+      </div>
+      <label class="slider"><span class="row"><span class="name">질량</span><output id="o-mass"></output></span>
+        <input type="range" id="s-mass" min="100" max="20000" step="100"><small id="h-mass"></small></label>
+      <label class="slider"><span class="row"><span class="name">크기</span><output id="o-size"></output></span>
+        <input type="range" id="s-size" min="1" max="30" step="0.5"><small id="h-size"></small></label>
+      <label class="slider"><span class="row"><span class="name">초기 속도</span><output id="o-speed"></output></span>
+        <input type="range" id="s-speed" min="0" max="12000" step="100"><small id="h-speed"></small></label>
+      <label class="slider"><span class="row"><span class="name">진입 각도</span><output id="o-angle"></output></span>
+        <input type="range" id="s-angle" min="0" max="90" step="1"><small id="h-angle"></small></label>
+      <h3 class="sub">착륙 장치</h3>
+      <label class="slider"><span class="row"><span class="name">낙하산 지름</span><output id="o-chute"></output></span>
+        <input type="range" id="s-chute" min="0" max="80" step="1"><small id="h-chute"></small></label>
+      <label class="slider"><span class="row"><span class="name">역추진 연료</span><output id="o-fuel"></output></span>
+        <input type="range" id="s-fuel" min="0" max="3000" step="50"><small id="h-fuel"></small></label>
+    </section>
+  </aside>
+
+  <section class="stage" id="stage">
+    <div class="screen" id="screen">
+      <canvas id="scene"></canvas>
+      <div class="hud" id="hud">
+        <div class="gauge"><span>고도</span><b id="hudAlt">100.0</b><i id="hudAltU">km</i></div>
+        <div class="gauge"><span>속도</span><b id="hudSpd">0</b><i>m/s</i></div>
+        <div class="gauge"><span>하중</span><b id="hudG">0.0</b><i>G</i></div>
+        <div class="gauge"><span>표면 온도</span><b id="hudTemp">-23</b><i>℃</i></div>
+      </div>
+      <div class="ticker" id="ticker" aria-live="polite"></div>
+      <div class="hull">
+        <div class="hull-top"><span>선체 내구도</span><b id="hullPct">100%</b></div>
+        <div class="hull-bar"><i id="hullFill"></i></div>
+        <div class="hull-legend">
+          <span class="lg heat">열 <b id="dmgHeat">0</b></span>
+          <span class="lg load">하중 <b id="dmgG">0</b></span>
+          <span class="lg hit">충돌 <b id="dmgImpact">0</b></span>
+          <span class="lg fuel" id="fuelWrap">연료 <b id="hudFuel">0</b></span>
+        </div>
+      </div>
+      <div class="result" id="result" hidden>
+        <div class="result-card">
+          <p class="verdict-kicker" id="resKicker"></p>
+          <h2 id="resTitle"></h2>
+          <p class="res-text" id="resText"></p>
+          <dl class="res-grid" id="resGrid"></dl>
+          <div class="res-dmg" id="resDmg"></div>
+          <p class="tip" id="resTip"></p>
+          <button type="button" class="btn primary" id="again">설정 바꿔서 다시 도전</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bar">
+      <button type="button" class="btn primary" id="launch">착륙 시작</button>
+      <button type="button" class="btn" id="pause" disabled>일시정지</button>
+      <button type="button" class="btn" id="abort" disabled>처음으로</button>
+      <div class="warp" role="group" aria-label="재생 속도">
+        <span id="clock">T+00:00</span>
+        <button type="button" class="chip small" data-warp="auto">자동</button>
+        <button type="button" class="chip small" data-warp="1">×1</button>
+        <button type="button" class="chip small" data-warp="10">×10</button>
+        <button type="button" class="chip small" data-warp="50">×50</button>
+        <span id="warpNow" class="warp-now"></span>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-head"><h3>비행 기록</h3>
+        <span class="lg alt">고도</span><span class="lg spd">속도</span><span class="lg tmp">표면 온도</span></div>
+      <canvas id="chart"></canvas>
+    </div>
+
+    <details class="notes">
+      <summary>이 시뮬레이션의 가정</summary>
+      <ul>
+        <li>우주선은 행성 표면 위 100 km 상공에서 출발합니다. 진입 각도는 수평선 아래로 기울어진 정도입니다(0° = 수평, 90° = 수직 낙하).</li>
+        <li>외계행성은 지구와 밀도가 같다고 보고 중력가속도에 비례해 반지름을 정합니다. 대기는 고도 7.2 km마다 약 2.7배씩 옅어집니다.</li>
+        <li>열 피해는 표면 온도가 형태별 내열 한계를 넘는 동안, 하중 피해는 감속 G가 형태별 한계를 넘는 동안 쌓입니다. 착지 속도가 초속 4 m를 넘으면 충돌 피해를 받습니다.</li>
+        <li>낙하산은 고도 6 km 아래, 초속 200 m 아래에서 자동으로 펴지며 공기가 없으면 펴지지 않습니다. 역추진 엔진은 자동 조종으로 마지막 순간에 점화됩니다.</li>
+        <li>행성의 자전, 바람, 우주선의 자세 제어는 고려하지 않은 단순화된 모형입니다.</li>
+      </ul>
+    </details>
+  </section>
+</main>
+
+<footer class="foot">코딩수업 · 행성 착륙 시뮬레이터</footer>
+
+<script src="physics.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
