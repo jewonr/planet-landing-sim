@@ -292,7 +292,7 @@ input[type=range]::-moz-range-thumb {
   .screen { aspect-ratio: 4 / 5; }
   .gauge { min-width: 0; flex: 1 1 40%; padding: 4px 8px; }
   .gauge b { font-size: 17px; }
-  .ticker { top: 112px; }
+  .ticker { top: 134px; }
   .result { position: fixed; z-index: 20; }
   .res-grid { grid-template-columns: repeat(2, 1fr); }
   .btn.primary { flex: 1 1 100%; }
